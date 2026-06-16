@@ -27,6 +27,8 @@
     "format:check": "prettier --check src/**/*.ts",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
+    "build:mcpb": "tsx scripts/build-mcpb.ts",
+    "package:mcpb": "tsx scripts/build-mcpb.ts --no-build",
     "ci": "npm run type-check && npm run lint && npm run test && npm run test:functional && npm run build",
     "prepare": "husky"
   },
@@ -54,12 +56,14 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/archiver": "^6.0.4",
     "@types/jsforce": "^1.9.46",
     "@types/node": "^22.10.5",
     "@types/validator": "^13.12.2",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "@vitest/coverage-v8": "^2.1.8",
+    "archiver": "^7.0.1",
     "eslint": "^9.18.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
