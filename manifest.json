@@ -1,0 +1,118 @@
+{
+  "manifest_version": "0.3",
+  "name": "salesforce-mcp-server",
+  "display_name": "Salesforce MCP Server",
+  "version": "0.6.0",
+  "description": "Model Context Protocol server for Salesforce organizations — query and explore Salesforce data through standardized AI-accessible tools.",
+  "author": {
+    "name": "realfast.ai",
+    "url": "https://realfast.ai"
+  },
+  "license": "BSL-1.1",
+  "keywords": ["salesforce", "mcp", "model-context-protocol", "ai", "crm"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "SFDC_CLIENT_ID": "${user_config.sfdc_client_id}",
+        "SFDC_INSTANCE_URL": "${user_config.sfdc_instance_url}",
+        "SFDC_CLIENT_SECRET": "${user_config.sfdc_client_secret}",
+        "SFDC_TOKEN_FILE": "${user_config.sfdc_token_file}",
+        "MCP_LOG_FILE": "${user_config.mcp_log_file}"
+      }
+    }
+  },
+  "user_config": {
+    "sfdc_client_id": {
+      "type": "string",
+      "title": "Salesforce Client ID",
+      "description": "OAuth Connected App Client ID from your Salesforce org",
+      "required": true,
+      "sensitive": false
+    },
+    "sfdc_instance_url": {
+      "type": "string",
+      "title": "Salesforce Instance URL",
+      "description": "Your Salesforce org URL, e.g. https://myorg.my.salesforce.com",
+      "required": true,
+      "sensitive": false
+    },
+    "sfdc_client_secret": {
+      "type": "string",
+      "title": "Salesforce Client Secret",
+      "description": "OAuth Connected App Client Secret (leave blank if using PKCE-only flow)",
+      "required": false,
+      "sensitive": true
+    },
+    "sfdc_token_file": {
+      "type": "file",
+      "title": "Token Storage File Path",
+      "description": "Absolute path where encrypted OAuth tokens will be persisted across sessions",
+      "required": false
+    },
+    "mcp_log_file": {
+      "type": "file",
+      "title": "Log File Path",
+      "description": "Absolute path for the server log file (leave blank to disable file logging)",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "soql_query",
+      "description": "Execute SOQL queries against Salesforce with pagination support and injection prevention"
+    },
+    {
+      "name": "sosl_search",
+      "description": "Perform SOSL searches across multiple Salesforce objects with result ranking"
+    },
+    {
+      "name": "validate_soql",
+      "description": "Validate SOQL syntax without execution, including security analysis"
+    },
+    {
+      "name": "explain_query_plan",
+      "description": "Get the query execution plan for a SOQL statement to aid optimization"
+    },
+    {
+      "name": "describe_object",
+      "description": "Get comprehensive object metadata and schema information for a Salesforce object"
+    },
+    {
+      "name": "list_objects",
+      "description": "List all available Salesforce objects (standard and custom) with optional filtering"
+    },
+    {
+      "name": "get_record",
+      "description": "Retrieve a specific Salesforce record by ID with configurable field selection"
+    },
+    {
+      "name": "get_picklist_values",
+      "description": "Get picklist values for specified fields, including dependencies and controlling fields"
+    },
+    {
+      "name": "get_org_limits",
+      "description": "Retrieve current org API limits and usage statistics"
+    },
+    {
+      "name": "get_user_info",
+      "description": "Get information about the currently authenticated Salesforce user"
+    },
+    {
+      "name": "get_recent_items",
+      "description": "Get recently viewed or modified items from the Salesforce org"
+    },
+    {
+      "name": "describe_layout",
+      "description": "Get page layout information for a Salesforce object"
+    }
+  ],
+  "compatibility": {
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

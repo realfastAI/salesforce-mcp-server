@@ -238,3 +238,7 @@ backups/neo4j/*.meta
 
 # Backup files during refactoring
 *.backup
+
+# MCPB build artifacts
+.mcpb-stage/
+*.mcpb
