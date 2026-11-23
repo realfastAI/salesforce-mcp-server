@@ -16,6 +16,11 @@ export class DescribeObjectTool extends Tool {
         objectName: {
           type: 'string',
           description: 'The API name of the Salesforce object to describe (e.g., Account, Contact, Custom__c)'
+        },
+        maxFields: {
+          type: 'number',
+          description: 'Maximum number of fields to return (default: all fields, or specify a limit if token constrained)',
+          minimum: 1
         }
       },
       required: ['objectName']
@@ -30,7 +35,7 @@ export class DescribeObjectTool extends Tool {
   }
 
   async execute(params: any, context: ToolExecutionContext): Promise<ToolResult> {
-    const { objectName } = params
+    const { objectName, maxFields } = params
     
     this.logger.info({ objectName }, 'Describing Salesforce object')
     
@@ -67,7 +72,7 @@ export class DescribeObjectTool extends Tool {
           master: rt.master,
           available: rt.available
         })),
-        fields: describeResult.fields?.slice(0, 10).map(field => ({
+        fields: (maxFields ? describeResult.fields?.slice(0, maxFields) : describeResult.fields)?.map(field => ({
           name: field.name,
           label: field.label,
           type: field.type,
