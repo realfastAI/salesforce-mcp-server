@@ -160,7 +160,7 @@ describe('DescribeObjectTool', () => {
     expect(result.content[0].text).toContain('INVALID_TYPE')
   })
 
-  test('should limit fields to first 10 in response', async () => {
+  test('should return all fields by default or respect maxFields when specified', async () => {
     const mockDescribeResult = {
       ...createMockDescribeResult(),
       fields: Array.from({ length: 15 }, (_, i) => ({
@@ -184,10 +184,15 @@ describe('DescribeObjectTool', () => {
     vi.spyOn(mockClient, 'isConnected').mockReturnValue(true)
     vi.spyOn(mockClient, 'getConnection').mockReturnValue(mockConnection as any)
     
-    const result = await tool.execute({ objectName: 'Account' }, { salesforceClient: mockClient })
-    const parsedResult = JSON.parse(result.content[0].text)
-    
-    expect(parsedResult.fields).toHaveLength(10)
+    // By default, should return all fields
+    const resultAll = await tool.execute({ objectName: 'Account' }, { salesforceClient: mockClient })
+    const parsedAll = JSON.parse(resultAll.content[0].text)
+    expect(parsedAll.fields).toHaveLength(15)
+
+    // With maxFields, should respect the limit
+    const resultLimited = await tool.execute({ objectName: 'Account', maxFields: 5 }, { salesforceClient: mockClient })
+    const parsedLimited = JSON.parse(resultLimited.content[0].text)
+    expect(parsedLimited.fields).toHaveLength(5)
   })
 })
 
@@ -436,6 +441,33 @@ describe('SoqlQueryTool', () => {
 
     expect(result.content[0].text).toContain('Showing 50 records')
     expect(result.content[0].text).toContain('1000 total records available')
+  })
+
+  test('should execute pagination using nextRecordsUrl cursor', async () => {
+    const mockQueryMoreResult = {
+      totalSize: 1000,
+      done: true,
+      records: [
+        { Id: '001000000051', Name: 'Account 51', attributes: { type: 'Account' } }
+      ]
+    }
+
+    const mockConnection = {
+      query: vi.fn(),
+      queryMore: vi.fn().mockResolvedValue(mockQueryMoreResult)
+    }
+
+    mockClient.isConnected = vi.fn().mockReturnValue(true)
+    mockClient.getConnection = vi.fn().mockReturnValue(mockConnection as any)
+
+    const result = await tool.execute({
+      query: 'SELECT Id, Name FROM Account',
+      nextRecordsUrl: '/services/data/v59.0/query/01g000000000001-2000'
+    }, context)
+
+    expect(mockConnection.queryMore).toHaveBeenCalledWith('/services/data/v59.0/query/01g000000000001-2000')
+    expect(mockConnection.query).not.toHaveBeenCalled()
+    expect(result.content[0].text).toContain('Account 51')
   })
 
   test('should prevent SQL injection attempts', async () => {

@@ -23,6 +23,10 @@ export class SoqlQueryTool extends Tool {
           maximum: 2000,
           description: 'Maximum number of records to return (default: 200, max: 2000)',
           default: 200
+        },
+        nextRecordsUrl: {
+          type: 'string',
+          description: 'Optional pagination cursor / locator URL returned from a previous query when hasMore is true'
         }
       },
       required: ['query']
@@ -34,8 +38,8 @@ export class SoqlQueryTool extends Tool {
     }
   }
 
-  async execute(params: { query: string; limit?: number }, context: ToolExecutionContext): Promise<ToolResult> {
-    const { query, limit = 200 } = params
+  async execute(params: { query: string; limit?: number; nextRecordsUrl?: string }, context: ToolExecutionContext): Promise<ToolResult> {
+    const { query, limit = 200, nextRecordsUrl } = params
     
     // Validate and sanitize the SOQL query FIRST (security)
     this.validateSoqlQuery(query)
@@ -58,8 +62,10 @@ export class SoqlQueryTool extends Tool {
         limit 
       }, 'Executing SOQL query')
 
-      // Execute the query with pagination
-      let queryResult = await connection.query(query)
+      // Execute the query or queryMore with pagination cursor
+      let queryResult = nextRecordsUrl 
+        ? await connection.queryMore(nextRecordsUrl)
+        : await connection.query(query)
       
       // Apply client-side limit if needed
       if (queryResult.records.length > limit) {
